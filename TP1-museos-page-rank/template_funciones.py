@@ -58,8 +58,13 @@ def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
     # Retorna la matriz C
-    Kinv = ... # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
-    C = Kinv@A # Calcula C multiplicando Kinv y A
+       
+    AT = A.T
+
+    grados = np.sum(AT, axis=1)
+
+    Kinv = np.diag([1/g if g != 0 else 0 for g in grados]) # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
+    C = AT@Kinv # Calcula C multiplicando Kinv y A
     return C
 
     
@@ -69,10 +74,12 @@ def calcula_pagerank(A,alfa):
     # d: coeficientes de damping
     # Retorna: Un vector p con los coeficientes de page rank de cada museo
     C = calcula_matriz_C(A)
-    N = ... # Obtenemos el número de museos N a partir de la estructura de la matriz A
-    M = ...
+    N = A.shape[0] # Obtenemos el número de museos N a partir de la estructura de la matriz A
+    M = (N/alfa) * ( np.eye(N) - ((1 - alfa) * C))
     L, U = calculaLU(M) # Calculamos descomposición LU a partir de C y d
-    b = ... # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N.
+
+    b =  np.ones(N) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N. CHECKEAR!
+
     Up = scipy.linalg.solve_triangular(L,b,lower=True) # Primera inversión usando L
     p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
     return p
@@ -84,8 +91,11 @@ def calcula_matriz_C_continua(D):
     D = D.copy()
     F = 1/D
     np.fill_diagonal(F,0)
-    Kinv = ... # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de F 
-    C = ... # Calcula C multiplicando Kinv y F
+
+    suma_filas = np.sum(F, axis=1)
+
+    Kinv = np.diag([1/s if s != 0 else 0 for s in suma_filas]) # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de F 
+    C = Kinv @ F # Calcula C multiplicando Kinv y F
     return C
 
 def calcula_B(C,cantidad_de_visitas):
