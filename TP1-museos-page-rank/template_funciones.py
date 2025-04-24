@@ -1,3 +1,5 @@
+import numpy as np
+
 def construye_adyacencia(D,m): 
     # Función que construye la matriz de adyacencia del grafo de museos
     # D matriz de distancias, m cantidad de links por nodo
@@ -14,13 +16,50 @@ def calculaLU(matriz):
     # matriz es una matriz de NxN
     # Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
     # Completar! Have fun
+    m=matriz.shape[0]
+    n=matriz.shape[1]
+    
+    if m!=n:
+        print('Matriz no cuadrada')
+        return
+    
+    L = np.eye(matriz.shape[0])
+    U = matriz.copy()
+    for j in range(m):
+        for i in range(j+1, n):
+            L[i,j]= U[i,j]/U[j,j] 
+            U[i,:] = U[i,:] - L[i,j]*U[j,:]   
+    
+    return L, U
+
+def resolucion_sistema(L, U, b):
+    m = L.shape[0]
+
+    # Sustitución hacia adelante: Ly = b
+    y = np.zeros_like(b, dtype=float)
+    for i in range(m):
+        y[i] = b[i] - np.dot(L[i, :i], y[:i])
+
+    # Sustitución hacia atrás: Ux = y
+    x = np.zeros_like(b, dtype=float)
+    for i in range(m-1, -1, -1):
+        x[i] = (y[i] - np.dot(U[i, i+1:], x[i+1:])) / U[i, i]
+
+    return x
+
+
+def solucion_final(A, b):
+    L, U = calculaLU(A)
+    x_res = resolucion_sistema(L, U, b)
+    return x_res
+
 
 def calcula_matriz_C(A): 
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
     # Retorna la matriz C
     Kinv = ... # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
-    C = ... # Calcula C multiplicando Kinv y A
+    C = Kinv@A # Calcula C multiplicando Kinv y A
     return C
 
     
