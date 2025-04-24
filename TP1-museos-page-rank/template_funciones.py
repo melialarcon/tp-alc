@@ -78,7 +78,7 @@ def calcula_pagerank(A,alfa):
     M = (N/alfa) * ( np.eye(N) - ((1 - alfa) * C))
     L, U = calculaLU(M) # Calculamos descomposición LU a partir de C y d
 
-    b =  np.ones(N) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N. CHECKEAR!
+    b =  (alfa/N) * np.ones(N) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N. CHECKEAR!
 
     Up = scipy.linalg.solve_triangular(L,b,lower=True) # Primera inversión usando L
     p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
@@ -107,4 +107,5 @@ def calcula_B(C,cantidad_de_visitas):
     B = np.eye(C.shape[0])
     for i in range(cantidad_de_visitas-1):
         # Sumamos las matrices de transición para cada cantidad de pasos
+        break  
     return B
