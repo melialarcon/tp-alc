@@ -153,7 +153,7 @@ def norma_1_matriz(M):
 # Definimos nuestra función para invertir matrices, pues la precisaremos para B
 def inversa_por_LU(A):
     """
-    Calcula la inversa de la matriz A usando la factorización LU y tus funciones.
+    Calcula la inversa de la matriz A usando la factorización LU.
     
     Parámetros:
     - A: (matriz cuadrada)
@@ -175,7 +175,15 @@ def inversa_por_LU(A):
     return A_inv
 
 def calcular_condicion_1(B):
-
+    """
+    Calcula número condición de norma 1.
+    
+    Parámetros:
+    - B: (matriz cuadrada)
+    
+    Retorna:
+    - Numero condicion de norma 1 de B
+    """
     norma_B = norma_1_matriz(B)
     B_inv = inversa_por_LU(B)
     norma_Binv = norma_1_matriz(B_inv)
