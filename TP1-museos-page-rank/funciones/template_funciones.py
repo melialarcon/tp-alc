@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 def construye_adyacencia(D,m): 
     # Función que construye la matriz de adyacencia del grafo de museos
@@ -47,6 +48,18 @@ def resolucion_sistema(L, U, b):
 
     return x
 
+# Crea la matrix de transiciones C
+def transiciones(D, func):
+    n = D.shape[0]
+    C = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                sum_ij = func(D[i, j])
+                denominador = np.sum(func(np.delete(D[i,:], i)))
+                C[j, i] = sum_ij / denominador
+    
+    return C
 
 def solucion_final(A, b):
     L, U = calculaLU(A)
@@ -98,14 +111,72 @@ def calcula_matriz_C_continua(D):
     C = Kinv @ F # Calcula C multiplicando Kinv y F
     return C
 
+# Usamos nuestra función para calcular B,
 def calcula_B(C,cantidad_de_visitas):
-    # Recibe la matriz T de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
+    # Recibe la matriz C de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
     # suponiendo que cada visitante realizó cantidad_de_visitas pasos
     # C: Matirz de transiciones
     # cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
     # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
     B = np.eye(C.shape[0])
-    for i in range(cantidad_de_visitas-1):
+    res = np.zeros(C.shape)
+    for i in range(cantidad_de_visitas):
         # Sumamos las matrices de transición para cada cantidad de pasos
-        break  
-    return B
+        suma = B
+        for _ in range(i):
+            suma = suma @ C
+        res += suma
+    return res
+
+# Definimos nuestra función para calcular la norma 1 dada una matriz
+def norma_1_matriz(M):
+    """
+    Calcula la norma 1 de una matriz (suma máxima por columnas).
+
+    Parámetros:
+    - M: lista de listas (matriz)
+
+    Retorna:
+    - norma_1 (float): norma 1 de la matriz
+    """
+    print("M.shape", M.shape)
+    n_filas = len(M)
+    n_cols = len(M[0])
+    
+    max_suma = 0
+    for j in range(n_cols):
+        suma_col = sum(abs(M[i][j]) for i in range(n_filas))
+        if suma_col > max_suma:
+            max_suma = suma_col
+    return max_suma
+
+# Definimos nuestra función para invertir matrices, pues la precisaremos para B
+def inversa_por_LU(A):
+    """
+    Calcula la inversa de la matriz A usando la factorización LU y tus funciones.
+    
+    Parámetros:
+    - A: (matriz cuadrada)
+    
+    Retorna:
+    - A_inv: (matriz inversa)
+    """
+    n = A.shape[0]
+    L, U = calculaLU(A)
+
+    A_inv = np.zeros_like(A, dtype=float)
+    I = np.eye(n)
+
+    for i in range(n):
+        e = I[:, i]
+        x = resolucion_sistema(L, U, e)
+        A_inv[:, i] = x
+
+    return A_inv
+
+def calcular_condicion_1(B):
+
+    norma_B = norma_1_matriz(B)
+    B_inv = inversa_por_LU(B)
+    norma_Binv = norma_1_matriz(B_inv)
+    return norma_B * norma_Binv
