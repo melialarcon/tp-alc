@@ -48,19 +48,6 @@ def resolucion_sistema(L, U, b):
 
     return x
 
-# Crea la matrix de transiciones C
-def transiciones(D, func):
-    n = D.shape[0]
-    C = np.zeros((n, n))
-    for i in range(n):
-        for j in range(n):
-            if i != j:
-                sum_ij = func(D[i, j])
-                denominador = np.sum(func(np.delete(D[i,:], i)))
-                C[j, i] = sum_ij / denominador
-    
-    return C
-
 def solucion_final(A, b):
     L, U = calculaLU(A)
     x_res = resolucion_sistema(L, U, b)
@@ -81,20 +68,20 @@ def calcula_matriz_C(A):
     return C
 
     
-def calcula_pagerank(A,alfa):
+def calcula_pagerank(A, n, a, b):
     # Función para calcular PageRank usando LU
     # A: Matriz de adyacencia
-    # d: coeficientes de damping
+    # n: cantidad de museos
+    # a: coeficiente de damping
+    # b: vector solución
     # Retorna: Un vector p con los coeficientes de page rank de cada museo
+
     C = calcula_matriz_C(A)
-    N = A.shape[0] # Obtenemos el número de museos N a partir de la estructura de la matriz A
-    M = (N/alfa) * ( np.eye(N) - ((1 - alfa) * C))
-    L, U = calculaLU(M) # Calculamos descomposición LU a partir de C y d
 
-    b =  (alfa/N) * np.ones(N) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N. CHECKEAR!
+    M = (n/a) * ( np.eye(n) - ((1 - a) * C))
 
-    Up = scipy.linalg.solve_triangular(L,b,lower=True) # Primera inversión usando L
-    p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
+    p = solucion_final(M, b)
+
     return p
 
 def calcula_matriz_C_continua(D): 
