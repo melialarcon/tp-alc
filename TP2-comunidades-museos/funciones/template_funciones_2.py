@@ -1,3 +1,4 @@
+import numpy as np
 # Matriz A de ejemplo
 #A_ejemplo = np.array([
 #    [0, 1, 1, 1, 0, 0, 0, 0],
@@ -32,29 +33,29 @@ def calcula_Q(R,v):
 
 def metpot1(A,tol=1e-8,maxrep=np.Inf):
    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
-   v = ... # Generamos un vector de partida aleatorio, entre -1 y 1
-   v = ... # Lo normalizamos
-   v1 = ... # Aplicamos la matriz una vez
-   v1 = ... # normalizamos
-   l = ... # Calculamos el autovector estimado
-   l1 = ... # Y el estimado en el siguiente paso
+   v = np.random.uniform(-1, 1, A.shape[1]) # Generamos un vector de partida aleatorio, entre -1 y 1
+   v = v / np.linalg.norm(v)    # Lo normalizamos
+   v1 = A @ v   # Aplicamos la matriz una vez
+   v1 = v1 / np.linalg.norm(v1)  # normalizamos
+   l = v @ (A @ v) # Calculamos el autovector estimado | O AUTOVALOR? LO HAGO TOMANDOLO COMO AUTOVALOR CAMBIAR SI NO ES ASI !!!!!!!!!!!!
+   l1 = v1 @ (A @ v1)  # Y el estimado en el siguiente paso
    nrep = 0 # Contador
    while np.abs(l1-l)/np.abs(l) > tol and nrep < maxrep: # Si estamos por debajo de la tolerancia buscada 
       v = v1 # actualizamos v y repetimos
       l = l1
-      v1 = ... # Calculo nuevo v1
-      v1 = ... # Normalizo
-      l1 = ... # Calculo autovector
+      v1 = A @ v  # Calculo nuevo v1
+      v1 =  v1 / np.linalg.norm(v1) # Normalizo
+      l1 =  v1 @ (A @ v1)  # Calculo autovector
       nrep += 1 # Un pasito mas
    if not nrep < maxrep:
       print('MaxRep alcanzado')
-   l = ... # Calculamos el autovalor
+   l = v1 @ (A @ v1)  # Calculamos el autovalor
    return v1,l,nrep<maxrep
 
 def deflaciona(A,tol=1e-8,maxrep=np.Inf):
     # Recibe la matriz A, una tolerancia para el método de la potencia, y un número máximo de repeticiones
     v1,l1,_ = metpot1(A,tol,maxrep) # Buscamos primer autovector con método de la potencia
-    deflA = ... # Sugerencia, usar la funcion outer de numpy
+    deflA = A - l1 * np.outer(v1, v1) # Sugerencia, usar la funcion outer de numpy
     return deflA
 
 def metpot2(A,v1,l1,tol=1e-8,maxrep=np.Inf):
