@@ -1,25 +1,37 @@
 import numpy as np
 # Matriz A de ejemplo
-#A_ejemplo = np.array([
-#    [0, 1, 1, 1, 0, 0, 0, 0],
-#    [1, 0, 1, 1, 0, 0, 0, 0],
-#    [1, 1, 0, 1, 0, 1, 0, 0],
-#    [1, 1, 1, 0, 1, 0, 0, 0],
-#    [0, 0, 0, 1, 0, 1, 1, 1],
-#    [0, 0, 1, 0, 1, 0, 1, 1],
-#    [0, 0, 0, 0, 1, 1, 0, 1],
-#    [0, 0, 0, 0, 1, 1, 1, 0]
-#])
-
+A_ejemplo = np.array([
+   [0, 1, 1, 1, 0, 0, 0, 0],
+   [1, 0, 1, 1, 0, 0, 0, 0],
+   [1, 1, 0, 1, 0, 1, 0, 0],
+   [1, 1, 1, 0, 1, 0, 0, 0],
+   [0, 0, 0, 1, 0, 1, 1, 1],
+   [0, 0, 1, 0, 1, 0, 1, 1],
+   [0, 0, 0, 0, 1, 1, 0, 1],
+   [0, 0, 0, 0, 1, 1, 1, 0]
+])
 
 def calcula_L(A):
     # La función recibe la matriz de adyacencia A y calcula la matriz laplaciana
-    # Have fun!!
+    K = np.diag(np.sum(A_ejemplo,axis=0))
+    L = K - A_ejemplo
     return L
+
+def calcula_P(A):
+    k_array = np.sum(A,axis=0)
+    E = np.sum(k_array) / 2
+
+    P = np.zeros((8,8))
+    for i in range(8):
+        for j in range(8):
+            P[i, j] = (k_array[i] * k_array[j]) / (2 * E)
+    
+    return P
 
 def calcula_R(A):
     # La funcion recibe la matriz de adyacencia A y calcula la matriz de modularidad
-    # Have fun!!
+    P = calcula_P(A)
+    R = A - P
     return R
 
 def calcula_lambda(L,v):
