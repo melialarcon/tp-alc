@@ -21,9 +21,9 @@ def calcula_P(A):
     k_array = np.sum(A,axis=0)
     E = np.sum(k_array) / 2
 
-    P = np.zeros((8,8))
-    for i in range(8):
-        for j in range(8):
+    P = np.zeros((A.shape[0], A.shape[1]))
+    for i in range(A.shape[0]):
+        for j in range(A.shape[1]):
             P[i, j] = (k_array[i] * k_array[j]) / (2 * E)
     
     return P
@@ -34,13 +34,35 @@ def calcula_R(A):
     R = A - P
     return R
 
+# AUX
+def calcula_s(v):
+    # Usamos sugerencia del enunciado: s = signo de cada elemento de v
+    s = np.sign(v) # signos de v, excepto ceros
+    s[s == 0] = 1 # tomamos al 0 como signo positivo
+    
+    return s
+
 def calcula_lambda(L,v):
     # Recibe L y v y retorna el corte asociado
-    # Have fun!
-    return lambdon
+    
+    # Primero de v armo s y s traspuesta
+    s = calcula_s(v)
+    s_t = s.T
+    
+    lambda_corte = ( 1 / 4 ) * ( s_t @ L @ s )
+    
+    return lambda_corte
 
 def calcula_Q(R,v):
     # La funcion recibe R y s y retorna la modularidad (a menos de un factor 2E)
+    
+    # Primero con "v" armamos "s" y "s" traspuesta
+    s = calcula_s(v)
+    s_t = s.T
+    
+    # R = A - P
+    Q = ( s_t @ R @ s ) # * (1 / (4 * E ) ), que lo omitimos por sugerencia del enunciado
+    
     return Q
 
 def metpot1(A,tol=1e-8,maxrep=np.Inf):
