@@ -86,11 +86,30 @@ def metpot1(A,tol=1e-8,maxrep=np.Inf):
    l = v1 @ (A @ v1)  # Calculamos el autovalor
    return v1,l,nrep<maxrep
 
+# NOTA: Probé esta matriz
+
+# A = np.array([[1, -1, 0], [-1, 2, -1], [0, -1, 1]])
+# A tiene AVAS: {3, 1, 0}
+# asociados a AVES respectivos: # (1, 1, 1)
+                                # (-1, 0, 1)
+                                # (1, -2, 1)
+
+# metpot1(A) me devuelve:
+# (array([-0.4082322 ,  0.81649658, -0.40826438]), 2.999999998964646, True)
+
+# np.outer( v1, v2 ) multiplica a v2 por cada elemento de v1 y lo devuelve en listas diferentes
 def deflaciona(A,tol=1e-8,maxrep=np.Inf):
     # Recibe la matriz A, una tolerancia para el método de la potencia, y un número máximo de repeticiones
-    v1,l1,_ = metpot1(A,tol,maxrep) # Buscamos primer autovector con método de la potencia
-    deflA = A - l1 * np.outer(v1, v1) # Sugerencia, usar la funcion outer de numpy
+    ave1,ava1,_ = metpot1(A,tol,maxrep) # Buscamos primer autovalor (dominante) con el método de la potencia
+    
+    deflA = A - ava1 * np.outer(ave1, ave1) # Sugerencia, usar la funcion outer de numpy
     return deflA
+
+# deflaciona(A) me devuelve:
+# array([[ 4.99963968e-01,  2.83860095e-05, -4.99992354e-01],
+#      [ 4.36760001e-05,  1.57680358e-09, -4.36775769e-05],
+#      [-5.00007644e-01, -2.83875863e-05,  5.00036032e-01]])
+
 
 def metpot2(A,v1,l1,tol=1e-8,maxrep=np.Inf):
    # La funcion aplica el metodo de la potencia para buscar el segundo autovalor de A, suponiendo que sus autovectores son ortogonales
