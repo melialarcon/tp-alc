@@ -137,6 +137,10 @@ def norma_1_matriz(M):
             max_suma = suma_col
     return max_suma
 
+def norma_2_matriz(M):
+    M_cuadrado = M**2
+    return np.sqrt(np.sum(M_cuadrado))
+
 # Definimos nuestra función para invertir matrices, pues la precisaremos para B
 def inversa_por_LU(A):
     """

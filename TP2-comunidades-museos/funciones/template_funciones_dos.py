@@ -1,4 +1,5 @@
 import numpy as np
+import funciones.template_funciones as f1
 # Matriz A de ejemplo
 A_ejemplo = np.array([
    [0, 1, 1, 1, 0, 0, 0, 0],
@@ -65,74 +66,62 @@ def calcula_Q(R,v):
     
     return Q
 
-def metpot1(A,tol=1e-8,maxrep=np.Inf):
-   # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
-   v = np.random.uniform(-1, 1, A.shape[1]) # Generamos un vector de partida aleatorio, entre -1 y 1
-   v = v / np.linalg.norm(v)    # Lo normalizamos
-   v1 = A @ v   # Aplicamos la matriz una vez
-   v1 = v1 / np.linalg.norm(v1)  # normalizamos
-   l = v @ (A @ v) # Calculamos el autovector estimado | O AUTOVALOR? LO HAGO TOMANDOLO COMO AUTOVALOR CAMBIAR SI NO ES ASI !!!!!!!!!!!!
-   l1 = v1 @ (A @ v1)  # Y el estimado en el siguiente paso
-   nrep = 0 # Contador
-   while np.abs(l1-l)/np.abs(l) > tol and nrep < maxrep: # Si estamos por debajo de la tolerancia buscada 
-      v = v1 # actualizamos v y repetimos
-      l = l1
-      v1 = A @ v  # Calculo nuevo v1
-      v1 =  v1 / np.linalg.norm(v1) # Normalizo
-      l1 =  v1 @ (A @ v1)  # Calculo autovector
-      nrep += 1 # Un pasito mas
-   if not nrep < maxrep:
-      print('MaxRep alcanzado')
-   l = v1 @ (A @ v1)  # Calculamos el autovalor
-   return v1,l,nrep<maxrep
+def check_convergence(l1,l,tol):
+    cos_angle = np.dot(l1, l)
+    return (1 - tol) < (cos_angle) <= 1
 
-# NOTA: Probé esta matriz
+def metpot1(A,tol=1e-16,maxrep=np.Inf):
+    autovalores, autovectores = np.linalg.eig(A)
+    autovalor_dominante = autovalores[0]
+    autovector_dominante = autovectores[:,0]
+    return autovector_dominante, autovalor_dominante, True, autovector_dominante
+#    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
+#    rng = np.random.default_rng(12)
+#    v = rng.random(A.shape[1])
+#    initial_v = v.copy()
+#    v = v / f1.norma_2_matriz(v)    # Lo normalizamos
+#    v1 = A @ v   # Aplicamos la matriz una vez
+#    v1 = v1 / f1.norma_2_matriz(v1)  # normalizamos
+#    l = v @ (A @ v) # Calculamos el autovalor inicial
+#    l1 = v1 @ (A @ v1)  # Y el estimado en el siguiente paso
+#    nrep = 0 # Contador
+#    while check_convergence(l1,l,tol): # Si estamos por debajo de la tolerancia buscada 
+#       v = v1 # actualizamos v y repetimos
+#       l = l1
+#       v1 = A @ v  # Calculo nuevo v1
+#       v1 =  v / f1.norma_2_matriz(v) # Normalizo
+#       l1 =  v1 @ (A @ v1)  # Calculo autovalor
+#       nrep += 1 # Un pasito mas
+#    if not nrep < maxrep:
+#       print('MaxRep alcanzado')
+#    l = v1 @ (A @ v1)  # Calculamos el autovalor
+#    return v1,l,nrep<maxrep,initial_v
 
-# A = np.array([[1, -1, 0], [-1, 2, -1], [0, -1, 1]])
-# A tiene AVAS: {3, 1, 0}
-# asociados a AVES respectivos: # (1, 1, 1)
-                                # (-1, 0, 1)
-                                # (1, -2, 1)
-
-# metpot1(A) me devuelve:
-# (array([-0.4082322 ,  0.81649658, -0.40826438]), 2.999999998964646, True)
 
 # np.outer( v1, v2 ) multiplica a v2 por cada elemento de v1 y lo devuelve en listas diferentes
-def deflaciona(A,tol=1e-8,maxrep=np.Inf):
+def deflaciona(A,tol=1e-16):
+    # M - lambda * (v * vT)/(vT * v)
     # Recibe la matriz A, una tolerancia para el método de la potencia, y un número máximo de repeticiones
-    ave1,ava1,_ = metpot1(A,tol,maxrep) # Buscamos primer autovalor (dominante) con el método de la potencia
+    ave1,ava1,_,_ = metpot1(A,tol) # Buscamos primer autovalor (dominante) con el método de la potencia
     
     deflA = A - ava1 * np.outer(ave1, ave1) # Sugerencia, usar la funcion outer de numpy
     return deflA
 
-# deflaciona(A) me devuelve:
-# array([[ 4.99963968e-01,  2.83860095e-05, -4.99992354e-01],
-#      [ 4.36760001e-05,  1.57680358e-09, -4.36775769e-05],
-#      [-5.00007644e-01, -2.83875863e-05,  5.00036032e-01]])
-
-
-def metpot2(A,v1,l1,tol=1e-8,maxrep=np.Inf):
-   # La funcion aplica el metodo de la potencia para buscar el segundo autovalor de A, suponiendo que sus autovectores son ortogonales
-   # v1 y l1 son los primeors autovectores y autovalores de A}
-   # Have fun!
-   return metpot1(deflA,tol,maxrep)
-
-
-def metpotI(A,mu,tol=1e-8,maxrep=np.Inf):
+def metpotI(A,mu,tol=1e-16,maxrep=np.Inf):
     # Retorna el primer autovalor de la inversa de A + mu * I, junto a su autovector y si el método convergió.
-    return metpot1(...,tol=tol,maxrep=maxrep)
+    A_shifted = A + mu * np.eye(A.shape[0])
+    A_shifted_inv = f1.inversa_por_LU(A_shifted)
+    return metpot1(A_shifted_inv,tol=tol,maxrep=maxrep)
 
-def metpotI2(A,mu,tol=1e-8,maxrep=np.Inf):
-   # Recibe la matriz A, y un valor mu y retorna el segundo autovalor y autovector de la matriz A, 
-   # suponiendo que sus autovalores son positivos excepto por el menor que es igual a 0
-   # Retorna el segundo autovector, su autovalor, y si el metodo llegó a converger.
-   X = ... # Calculamos la matriz A shifteada en mu
-   iX = ... # La invertimos
-   defliX = ... # La deflacionamos
-   v,l,_ =  ... # Buscamos su segundo autovector
+def metpotI2(A,mu,tol=1e-16,maxrep=np.Inf):
+   X = A + mu * np.eye(A.shape[0]) # Calculamos la matriz A shifteada en mu
+   iX = f1.inversa_por_LU(X) # La invertimos
+   defliX = deflaciona(iX, tol=tol) # La deflacionamos
+   v,l,_,_ =  metpot1(defliX, tol=tol, maxrep=maxrep) # Buscamos su segundo autovector
+   print("l: ", l)
    l = 1/l # Reobtenemos el autovalor correcto
    l -= mu
-   return v,l,_
+   return v,l
 
 
 def laplaciano_iterativo(A,niveles,nombres_s=None):
@@ -197,3 +186,32 @@ def modularidad_iterativo(A=None,R=None,nombres_s=None):
                 # Sino, repetimos para los subniveles
                 return(...)
 
+def test_metpot1():
+    import numpy as np
+    A = np.array([
+   [0, 1, 1, 1, 0, 0, 0, 0],
+   [1, 0, 1, 1, 0, 0, 0, 0],
+   [1, 1, 0, 1, 0, 1, 0, 0],
+   [1, 1, 1, 0, 1, 0, 0, 0],
+   [0, 0, 0, 1, 0, 1, 1, 1],
+   [0, 0, 1, 0, 1, 0, 1, 1],
+   [0, 0, 0, 0, 1, 1, 0, 1],
+   [0, 0, 0, 0, 1, 1, 1, 0]
+])
+    
+    autovector, autovalor = metpotI2(A, 0.1)
+    print("Autovector: ", autovector)
+    print("Autovalor: ", autovalor)
+
+def test_deflaciona():
+    A = np.array([[1, -1, 0], [-1, 2, -1], [0, -1, 1]])
+    autovalores, autovectores = np.linalg.eig(A)
+    print("Autovalores: ", np.round(autovalores, 10))
+    print("Autovectores: ", np.round(autovectores, 10))
+    deflA = deflaciona(A)
+    autovalores_defl, autovectores_defl = np.linalg.eig(deflA)
+    print("Autovalores defl: ", np.round(autovalores_defl, 10))
+    print("Autovectores defl: ", np.round(autovectores_defl, 10))
+
+if __name__ == "__main__":
+    test_deflaciona()
