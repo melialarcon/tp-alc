@@ -66,37 +66,40 @@ def calcula_Q(R,v):
     
     return Q
 
-def check_convergence(l1,l,tol):
-    cos_angle = np.dot(l1, l)
-    return (1 - tol) < (cos_angle) <= 1
+# NOTA: Probé esta matriz
+
+# A = np.array([[1, -1, 0], [-1, 2, -1], [0, -1, 1]])
+# A tiene AVAS: {3, 1, 0}
+# asociados a AVES respectivos: # (1, 1, 1)
+                                # (-1, 0, 1)
+                                # (1, -2, 1)
+                                
+# metpot de A debe ser: (1, 1, 1) o normalizado?, 3, true
 
 def metpot1(A,tol=1e-16,maxrep=np.Inf):
-    autovalores, autovectores = np.linalg.eig(A)
-    autovalor_dominante = autovalores[0]
-    autovector_dominante = autovectores[:,0]
-    return autovector_dominante, autovalor_dominante, True, autovector_dominante
-#    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
-#    rng = np.random.default_rng(12)
-#    v = rng.random(A.shape[1])
-#    initial_v = v.copy()
-#    v = v / f1.norma_2_matriz(v)    # Lo normalizamos
-#    v1 = A @ v   # Aplicamos la matriz una vez
-#    v1 = v1 / f1.norma_2_matriz(v1)  # normalizamos
-#    l = v @ (A @ v) # Calculamos el autovalor inicial
-#    l1 = v1 @ (A @ v1)  # Y el estimado en el siguiente paso
-#    nrep = 0 # Contador
-#    while check_convergence(l1,l,tol): # Si estamos por debajo de la tolerancia buscada 
-#       v = v1 # actualizamos v y repetimos
-#       l = l1
-#       v1 = A @ v  # Calculo nuevo v1
-#       v1 =  v / f1.norma_2_matriz(v) # Normalizo
-#       l1 =  v1 @ (A @ v1)  # Calculo autovalor
-#       nrep += 1 # Un pasito mas
-#    if not nrep < maxrep:
-#       print('MaxRep alcanzado')
-#    l = v1 @ (A @ v1)  # Calculamos el autovalor
-#    return v1,l,nrep<maxrep,initial_v
+    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
+    rng = np.random.default_rng(1148)
+    v = rng.random(A.shape[1]) # Generamos un vector de partida aleatorio, entre -1 y 1
+    v = v / f1.norma_2_matriz(v) # Lo normalizamos
 
+    v1 = A @ v # Aplicamos la matriz una vez
+    v1 = v1 / f1.norma_2_matriz(v1) # normalizamos
+
+    l = np.dot(v, A @ v) # Calculamos el autovector estimado
+    l1 = np.dot(v1, A @ v1) # Y el estimado en el siguiente paso
+
+    nrep = 0 # Contador
+    while np.abs(l1-l)/np.abs(l) > tol and nrep < maxrep: # Si estamos por debajo de la tolerancia buscada 
+        v = v1 # actualizamos v y repetimos
+        l = l1
+        v1 = A @ v # Calculo nuevo v1
+        v1 = v1 / f1.norma_2_matriz(v1) # Normalizo
+        l1 = np.dot(v1, A @ v1) # Calculo autovector
+        nrep += 1 # Un pasito mas
+    if not nrep < maxrep:
+        print('MaxRep alcanzado')
+    l = np.dot(v1, A @ v1) # Calculamos el autovalor
+    return v1,l,nrep<maxrep
 
 # np.outer( v1, v2 ) multiplica a v2 por cada elemento de v1 y lo devuelve en listas diferentes
 def deflaciona(A,tol=1e-16):
