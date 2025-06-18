@@ -110,6 +110,14 @@ def deflaciona(A,tol=1e-16):
     deflA = A - l * np.outer(v1, v1) # Sugerencia, usar la funcion outer de numpy
     return deflA
 
+# M − λ_1 v_1 . vT tiene autovalores 0, λ2, . . . , λn con autovectores asociados v1, . . . , vn
+def metpot2(A,v1,l1,tol=1e-8,maxrep=np.Inf):
+   # La funcion aplica el metodo de la potencia para buscar el segundo autovalor de A, suponiendo que sus autovectores son ortogonales
+   # v1 y l1 son los primeors autovectores y autovalores de A}
+   A_def = deflaciona(A, tol) # A deflacionada
+   
+   return metpot1(A_def,tol,maxrep)
+
 def metpotI(A,mu,tol=1e-16,maxrep=np.Inf):
     # Retorna el primer autovalor de la inversa de A + mu * I, junto a su autovector y si el método convergió.
     A_shifted = A + mu * np.eye(A.shape[0])
