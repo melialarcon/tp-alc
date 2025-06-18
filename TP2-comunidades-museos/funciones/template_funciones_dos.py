@@ -145,16 +145,26 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
         return([nombres_s])
     else: # Sino:
         L = calcula_L(A) # Recalculamos el L
-        v,l,_ = ... # Encontramos el segundo autovector de L
+
+        #------ esa linea es template  --> v,l,_ = ... # Encontramos el segundo autovector de L 
+        v1,l1,_ = metpot1(L) # Usamos el método de la potencia para encontrar el autovector y autovalor dominante
+        v2, _, _ = metpot2(L,v1,l1) # Usamos el método de la potencia para encontrar el segundo autovector y autovalor dominante
+
+        indices_pos = [i for i, vi in enumerate(v2) if vi >= 0] # Pongo los 0 en el positivo
+        indices_neg = [i for i, vi in enumerate(v2) if vi < 0]
+
         # Recortamos A en dos partes, la que está asociada a el signo positivo de v y la que está asociada al negativo
-        Ap = ... # Asociado al signo positivo
-        Am = ... # Asociado al signo negativo
-        
+
+        #Sacado de la documentación de numpy: a[np.ix_([1,3],[2,5])] returns the array [[a[1,2] a[1,5]], [a[3,2] a[3,5]]]
+        Ap = A[np.ix_(indices_pos, indices_pos)] # Asociado al signo positivo
+        Am = A[np.ix_(indices_neg, indices_neg)] # Asociado al signo negativo
+
+
         return(
                 laplaciano_iterativo(Ap,niveles-1,
-                                     nombres_s=[ni for ni,vi in zip(nombres_s,v) if vi>0]) +
+                                     nombres_s=[ni for ni,vi in zip(nombres_s,v2) if vi>0]) +
                 laplaciano_iterativo(Am,niveles-1,
-                                     nombres_s=[ni for ni,vi in zip(nombres_s,v) if vi<0])
+                                     nombres_s=[ni for ni,vi in zip(nombres_s,v2) if vi<0])
                 )        
 
 
@@ -171,19 +181,24 @@ def modularidad_iterativo(A=None,R=None,nombres_s=None):
         nombres_s = range(R.shape[0])
     # Acá empieza lo bueno
     if R.shape[0] == 1: # Si llegamos al último nivel
-        return(...)
+        return(nombres_s)
     else:
-        v,l,_ = ... # Primer autovector y autovalor de R
+        v,l,_ = metpot1(R) # Primer autovector y autovalor de R
         # Modularidad Actual:
         Q0 = np.sum(R[v>0,:][:,v>0]) + np.sum(R[v<0,:][:,v<0])
+
         if Q0<=0 or all(v>0) or all(v<0): # Si la modularidad actual es menor a cero, o no se propone una partición, terminamos
-            return(...)
+            return(nombres_s)
         else:
             ## Hacemos como con L, pero usando directamente R para poder mantener siempre la misma matriz de modularidad
-            Rp = ... # Parte de R asociada a los valores positivos de v
-            Rm = ... # Parte asociada a los valores negativos de v
-            vp,lp,_ = ...  # autovector principal de Rp
-            vm,lm,_ = ... # autovector principal de Rm
+            indices_pos = [i for i, vi in enumerate(v) if vi >= 0] # Pongo los 0 en el positivo
+            indices_neg = [i for i, vi in enumerate(v) if vi < 0]
+
+            Rp = R[np.ix_(indices_pos, indices_pos)]  # Parte de R asociada a los valores positivos de v
+            Rm = R[np.ix_(indices_neg, indices_neg)] # Parte asociada a los valores negativos de v
+
+            vp,lp,_ = metpot1(Rp)  # autovector principal de Rp
+            vm,lm,_ = metpot1(Rm) # autovector principal de Rm
         
             # Calculamos el cambio en Q que se produciría al hacer esta partición
             Q1 = 0
@@ -195,7 +210,15 @@ def modularidad_iterativo(A=None,R=None,nombres_s=None):
                 return([[ni for ni,vi in zip(nombres_s,v) if vi>0],[ni for ni,vi in zip(nombres_s,v) if vi<0]])
             else:
                 # Sino, repetimos para los subniveles
-                return(...)
+                # Partimos sobre la matriz de adyacencia original, CREO que es necesario para el llamado recursivo, si no, no hay A
+                Ap = A[np.ix_(indices_pos, indices_pos)]  # Parte de R asociada a los valores positivos de v
+                Am = A[np.ix_(indices_neg, indices_neg)] # Parte asociada a los valores negativos de v
+                return(
+                modularidad_iterativo(A=Ap,R=Rp,
+                                     nombres_s=[ni for ni,vi in zip(nombres_s,v) if vi>0]) +
+                modularidad_iterativo(A=Am,R=Rm,
+                                     nombres_s=[ni for ni,vi in zip(nombres_s,v) if vi<0])
+                )  
 
 def test_metpot1():
     import numpy as np
