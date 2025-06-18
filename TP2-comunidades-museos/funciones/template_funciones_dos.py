@@ -14,8 +14,8 @@ A_ejemplo = np.array([
 
 def calcula_L(A):
     # La función recibe la matriz de adyacencia A y calcula la matriz laplaciana
-    K = np.diag(np.sum(A_ejemplo,axis=0))
-    L = K - A_ejemplo
+    K = np.diag(np.sum(A,axis=0))
+    L = K - A
     return L
 
 def calcula_P(A):
