@@ -105,9 +105,9 @@ def metpot1(A,tol=1e-16,maxrep=np.Inf):
 def deflaciona(A,tol=1e-16):
     # M - lambda * (v * vT)/(vT * v)
     # Recibe la matriz A, una tolerancia para el método de la potencia, y un número máximo de repeticiones
-    ave1,ava1,_,_ = metpot1(A,tol) # Buscamos primer autovalor (dominante) con el método de la potencia
+    v1,l,_ = metpot1(A,tol) # Buscamos primer autovalor (dominante) con el método de la potencia
     
-    deflA = A - ava1 * np.outer(ave1, ave1) # Sugerencia, usar la funcion outer de numpy
+    deflA = A - l * np.outer(v1, v1) # Sugerencia, usar la funcion outer de numpy
     return deflA
 
 def metpotI(A,mu,tol=1e-16,maxrep=np.Inf):
@@ -120,7 +120,7 @@ def metpotI2(A,mu,tol=1e-16,maxrep=np.Inf):
    X = A + mu * np.eye(A.shape[0]) # Calculamos la matriz A shifteada en mu
    iX = f1.inversa_por_LU(X) # La invertimos
    defliX = deflaciona(iX, tol=tol) # La deflacionamos
-   v,l,_,_ =  metpot1(defliX, tol=tol, maxrep=maxrep) # Buscamos su segundo autovector
+   v,l,_ =  metpot1(defliX, tol=tol, maxrep=maxrep) # Buscamos su segundo autovector
    print("l: ", l)
    l = 1/l # Reobtenemos el autovalor correcto
    l -= mu
