@@ -67,21 +67,17 @@ def calcula_matriz_C(A):
     C = AT@Kinv # Calcula C multiplicando Kinv y A
     return C
 
-    
-def calcula_pagerank(A, n, a, b):
+
+def calcula_pagerank(A,alfa):
     # Función para calcular PageRank usando LU
     # A: Matriz de adyacencia
-    # n: cantidad de museos
-    # a: coeficiente de damping
-    # b: vector solución
+    # d: coeficientes de damping
     # Retorna: Un vector p con los coeficientes de page rank de cada museo
-
     C = calcula_matriz_C(A)
-
-    M = (n/a) * ( np.eye(n) - ((1 - a) * C))
-
+    N = A.shape[0] # Obtenemos el número de museos N a partir de la estructura de la matriz A
+    M = (M/alfa) * ( np.eye(n) - ((1 - alfa) * C))
+    b = np.ones((N)) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N.
     p = solucion_final(M, b)
-
     return p
 
 def calcula_matriz_C_continua(D): 
