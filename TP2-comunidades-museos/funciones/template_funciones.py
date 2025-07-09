@@ -79,6 +79,7 @@ def calcula_pagerank(A,alfa):
     b = np.ones((N)) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N.
     
     p = solucion_final(M, b)
+    p = p / np.sum(p) # Normalizamos con norma 1
     return p
 
 def calcula_matriz_C_continua(D): 
