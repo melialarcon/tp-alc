@@ -144,12 +144,11 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
     if A.shape[0] == 1 or niveles == 0: # Si llegamos al último paso, retornamos los nombres en una lista
         return([nombres_s])
     else: # Sino:
+        
         L = calcula_L(A) # Recalculamos el L
-
-        #------ esa linea es template  --> v,l,_ = ... # Encontramos el segundo autovector de L 
-        v1,l1,_ = metpot1(L) # Usamos el método de la potencia para encontrar el autovector y autovalor dominante
-        v2, _, _ = metpot2(L,v1,l1) # Usamos el método de la potencia para encontrar el segundo autovector y autovalor dominante
-
+        
+        v2,_ = metpotI2(L,0.1) # Usamos el método de la potencia para encontrar el segundo autovector y autovalor dominante
+        
         indices_pos = [i for i, vi in enumerate(v2) if vi >= 0] # Pongo los 0 en el positivo
         indices_neg = [i for i, vi in enumerate(v2) if vi < 0]
 
@@ -165,7 +164,7 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
                                      nombres_s=[ni for ni,vi in zip(nombres_s,v2) if vi>0]) +
                 laplaciano_iterativo(Am,niveles-1,
                                      nombres_s=[ni for ni,vi in zip(nombres_s,v2) if vi<0])
-                )        
+                )     
 
 
 def modularidad_iterativo(A=None,R=None,nombres_s=None):
