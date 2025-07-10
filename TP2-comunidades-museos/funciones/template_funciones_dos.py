@@ -129,7 +129,6 @@ def metpotI2(A,mu,tol=1e-16,maxrep=np.Inf):
    iX = f1.inversa_por_LU(X) # La invertimos
    defliX = deflaciona(iX, tol=tol) # La deflacionamos
    v,l,_ =  metpot1(defliX, tol=tol, maxrep=maxrep) # Buscamos su segundo autovector
-   print("l: ", l)
    l = 1/l # Reobtenemos el autovalor correcto
    l -= mu
    return v,l
