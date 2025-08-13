@@ -28,6 +28,8 @@ def calculaLU(matriz):
     U = matriz.copy()
     for j in range(m):
         for i in range(j+1, n):
+            if U[j,j] == 0:
+                raise ZeroDivisionError(f"Pivote nulo en posición {j}")
             L[i,j]= U[i,j]/U[j,j] 
             U[i,:] = U[i,:] - L[i,j]*U[j,:]   
     
@@ -75,6 +77,11 @@ def calcula_pagerank(A, n, a, b):
     # a: coeficiente de damping
     # b: vector solución
     # Retorna: Un vector p con los coeficientes de page rank de cada museo
+
+    if a == 0:
+        raise ValueError("El parámetro 'a' no puede ser cero")
+    if np.isnan(C).any() or np.isinf(C).any():
+        raise ValueError("La matriz C contiene valores no válidos")
 
     C = calcula_matriz_C(A)
 
