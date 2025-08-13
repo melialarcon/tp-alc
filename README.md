@@ -1,7 +1,7 @@
 # [De la web a la ciudad: ranking de museos con PageRank](/01-Museos-en-red/)
 
 Imaginemos por un momento que somos un turista curioso durante “La Noche de los Museos” en la Ciudad de Buenos Aires. Con tantas opciones por delante, ¿cómo decidir cuál visitar primero? ¿El más famoso? ¿El más cercano? ¿O el que nos recomendaron más personas?
-En este [trabajo](/Museos-en-red/TP1_template.ipynb) vamos a usar una herramienta nacida en el corazón de los buscadores web para responder a una pregunta muy parecida: ¿cómo ordenar lugares según su “importancia”?
+En este [trabajo](/01-Museos-en-red/TP1_template.ipynb) vamos a usar una herramienta nacida en el corazón de los buscadores web para responder a una pregunta muy parecida: ¿cómo ordenar lugares según su “importancia”?
 
 A partir de la idea detrás del algoritmo [PageRank](https://es.wikipedia.org/wiki/PageRank) —sí, el mismo que alguna vez hizo famoso a Google— vamos a reemplazar páginas web por museos, y enlaces por cercanía geográfica, para así crear un ranking que nos ayude a explorar la ciudad de manera más “matemática” (y un poco más divertida).
 
