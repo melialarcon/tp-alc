@@ -1,0 +1,177 @@
+import numpy as np
+import scipy
+
+def construye_adyacencia(D,m): 
+    # Función que construye la matriz de adyacencia del grafo de museos
+    # D matriz de distancias, m cantidad de links por nodo
+    # Retorna la matriz de adyacencia como un numpy.
+    D = D.copy()
+    l = [] # Lista para guardar las filas
+    for fila in D: # recorriendo las filas, anexamos vectores lógicos
+        l.append(fila<=fila[np.argsort(fila)[m]] ) # En realidad, elegimos todos los nodos que estén a una distancia menor o igual a la del m-esimo más cercano
+    A = np.asarray(l).astype(int) # Convertimos a entero
+    np.fill_diagonal(A,0) # Borramos diagonal para eliminar autolinks
+    return(A)
+
+def calculaLU(matriz):
+    # matriz es una matriz de NxN
+    # Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
+    # Completar! Have fun
+    m=matriz.shape[0]
+    n=matriz.shape[1]
+    
+    if m!=n:
+        print('Matriz no cuadrada')
+        return
+    
+    L = np.eye(matriz.shape[0])
+    U = matriz.copy()
+    for j in range(m):
+        for i in range(j+1, n):
+            L[i,j]= U[i,j]/U[j,j] 
+            U[i,:] = U[i,:] - L[i,j]*U[j,:]   
+    
+    return L, U
+
+def resolucion_sistema(L, U, b):
+    m = L.shape[0]
+
+    # Sustitución hacia adelante: Ly = b
+    y = np.zeros_like(b, dtype=float)
+    for i in range(m):
+        y[i] = b[i] - np.dot(L[i, :i], y[:i])
+
+    # Sustitución hacia atrás: Ux = y
+    x = np.zeros_like(b, dtype=float)
+    for i in range(m-1, -1, -1):
+        x[i] = (y[i] - np.dot(U[i, i+1:], x[i+1:])) / U[i, i]
+
+    return x
+
+def solucion_final(A, b):
+    L, U = calculaLU(A)
+    x_res = resolucion_sistema(L, U, b)
+    return x_res
+
+
+def calcula_matriz_C(A): 
+    # Función para calcular la matriz de trancisiones C
+    # A: Matriz de adyacencia
+    # Retorna la matriz C
+       
+    AT = A.T
+
+    grados = np.sum(AT, axis=1)
+
+    Kinv = np.diag([1/g if g != 0 else 0 for g in grados]) # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
+    C = AT@Kinv # Calcula C multiplicando Kinv y A
+    return C
+
+    
+def calcula_pagerank(A, n, a, b):
+    # Función para calcular PageRank usando LU
+    # A: Matriz de adyacencia
+    # n: cantidad de museos
+    # a: coeficiente de damping
+    # b: vector solución
+    # Retorna: Un vector p con los coeficientes de page rank de cada museo
+
+    C = calcula_matriz_C(A)
+
+    M = (n/a) * ( np.eye(n) - ((1 - a) * C))
+
+    p = solucion_final(M, b)
+
+    return p
+
+def calcula_matriz_C_continua(D): 
+    # Función para calcular la matriz de trancisiones C
+    # A: Matriz de adyacencia
+    # Retorna la matriz C en versión continua
+    D = D.copy()
+    F = 1/D
+    np.fill_diagonal(F,0)
+
+    suma_filas = np.sum(F, axis=1)
+
+    Kinv = np.diag([1/s if s != 0 else 0 for s in suma_filas]) # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de F 
+    C = Kinv @ F # Calcula C multiplicando Kinv y F
+    return C
+
+# Usamos nuestra función para calcular B
+def calcula_B(C,cantidad_de_visitas):
+    # Recibe la matriz C de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
+    # suponiendo que cada visitante realizó cantidad_de_visitas pasos
+    # C: Matirz de transiciones
+    # cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
+    # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
+    B = np.eye(C.shape[0])
+    res = np.zeros(C.shape)
+    for i in range(cantidad_de_visitas):
+        # Sumamos las matrices de transición para cada cantidad de pasos
+        suma = B
+        for _ in range(i):
+            suma = suma @ C
+        res += suma
+    return res
+
+# Definimos nuestra función para calcular la norma 1 dada una matriz
+def norma_1_matriz(M):
+    """
+    Calcula la norma 1 de una matriz (suma máxima por columnas).
+
+    Parámetros:
+    - M: lista de listas (matriz)
+
+    Retorna:
+    - norma_1 (float): norma 1 de la matriz
+    """
+    print("M.shape", M.shape)
+    n_filas = len(M)
+    n_cols = len(M[0])
+    
+    max_suma = 0
+    for j in range(n_cols):
+        suma_col = sum(abs(M[i][j]) for i in range(n_filas))
+        if suma_col > max_suma:
+            max_suma = suma_col
+    return max_suma
+
+# Definimos nuestra función para invertir matrices, pues la precisaremos para B
+def inversa_por_LU(A):
+    """
+    Calcula la inversa de la matriz A usando la factorización LU.
+    
+    Parámetros:
+    - A: (matriz cuadrada)
+    
+    Retorna:
+    - A_inv: (matriz inversa)
+    """
+    n = A.shape[0]
+    L, U = calculaLU(A)
+
+    A_inv = np.zeros_like(A, dtype=float)
+    I = np.eye(n)
+
+    for i in range(n):
+        e = I[:, i]
+        x = resolucion_sistema(L, U, e)
+        A_inv[:, i] = x
+
+    return A_inv
+
+def calcular_condicion_1(B):
+    """
+    Calcula número condición de norma 1.
+    
+    Parámetros:
+    - B: (matriz cuadrada)
+    
+    Retorna:
+    - Numero condicion de norma 1 de B
+    """
+    norma_B = norma_1_matriz(B)
+    B_inv = inversa_por_LU(B)
+    norma_Binv = norma_1_matriz(B_inv)
+    return norma_B * norma_Binv
